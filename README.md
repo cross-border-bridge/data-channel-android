@@ -15,7 +15,7 @@ DataChannel の Android用の実装を提供します。
 ### gradle
 ```
 dependencies {
-	compile 'jp.co.dwango.cbb:data-channel:2.0.1'
+	compile 'jp.co.dwango.cbb:data-channel:2.0.2'
 }
 ```
 
