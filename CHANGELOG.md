@@ -1,5 +1,8 @@
 # Change log
 
+## Version 2.0.4
+性能改善 (不要な排他制御を排除)
+
 ## Version 2.0.3
 - マルチスレッド対応 
 - DataBusをVersion 2.1.0に更新
