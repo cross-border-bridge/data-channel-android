@@ -5,6 +5,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import jp.co.dwango.cbb.db.DataBus;
@@ -16,9 +18,10 @@ public class DataChannel {
 	private static final int DATA_TYPE_RESPONSE = 3;
 	private static final int DATA_TYPE_ERROR = 4;
 	public final DataBus dataBus;
+	private final Object locker = new Object();
 	private final DataChannelWaitingResponseTable waitingCallbacks = new DataChannelWaitingResponseTable();
+	private final List<DataChannelHandler> handlers = Collections.synchronizedList(new ArrayList<DataChannelHandler>());
 	private DataBusHandler dataBusHandler;
-	private ArrayList<DataChannelHandler> handlers = new ArrayList<DataChannelHandler>();
 	private int latestTagNumber = 1;
 	private boolean destroyed = false;
 
@@ -119,11 +122,13 @@ public class DataChannel {
 	 */
 	public void sendPush(Object push) {
 		if (destroyed) return;
-		JSONArray data = new JSONArray().put(push);
-		JSONArray packet = new JSONArray();
-		packet.put(DATA_TYPE_PUSH);
-		packet.put(data);
-		dataBus.send(packet);
+		synchronized (locker) {
+			JSONArray data = new JSONArray().put(push);
+			JSONArray packet = new JSONArray();
+			packet.put(DATA_TYPE_PUSH);
+			packet.put(data);
+			dataBus.send(packet);
+		}
 	}
 
 	/**
@@ -138,26 +143,30 @@ public class DataChannel {
 			sendPush(request);
 			return;
 		}
-		JSONArray data = new JSONArray();
-		RequestTag tag = new RequestTag("A", latestTagNumber++);
-		data.put(tag.toString());
-		waitingCallbacks.put(tag, callback);
-		data.put(request);
-		JSONArray packet = new JSONArray();
-		packet.put(DATA_TYPE_REQUEST);
-		packet.put(data);
-		dataBus.send(packet);
+		synchronized (locker) {
+			JSONArray data = new JSONArray();
+			RequestTag tag = new RequestTag("A", latestTagNumber++);
+			data.put(tag.toString());
+			waitingCallbacks.put(tag, callback);
+			data.put(request);
+			JSONArray packet = new JSONArray();
+			packet.put(DATA_TYPE_REQUEST);
+			packet.put(data);
+			dataBus.send(packet);
+		}
 	}
 
 	void sendResponse(String tag, Object response) {
 		if (destroyed) return;
-		JSONArray data = new JSONArray();
-		data.put(tag);
-		data.put(response);
-		JSONArray packet = new JSONArray();
-		packet.put(DATA_TYPE_RESPONSE);
-		packet.put(data);
-		dataBus.send(packet);
+		synchronized (locker) {
+			JSONArray data = new JSONArray();
+			data.put(tag);
+			data.put(response);
+			JSONArray packet = new JSONArray();
+			packet.put(DATA_TYPE_RESPONSE);
+			packet.put(data);
+			dataBus.send(packet);
+		}
 	}
 
 	/**

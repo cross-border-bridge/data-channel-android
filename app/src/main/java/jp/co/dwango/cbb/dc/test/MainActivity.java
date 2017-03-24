@@ -83,19 +83,21 @@ public class MainActivity extends AppCompatActivity {
 		v.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				dataChannel.sendRequest("request from Java to JS", new DataChannelResponseHandler() {
-					@Override
-					public void onResponse(Object packet) {
-						String text = "received result from js: packet=" + packet;
-						Log.d("data-dataChannel-java", text);
-						Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
-					}
+				for (int i = 0; i < 10; i++) {
+					dataChannel.sendRequest("request from Java to JS", new DataChannelResponseHandler() {
+						@Override
+						public void onResponse(Object packet) {
+							String text = "received result from js: packet=" + packet;
+							Log.d("data-dataChannel-java", text);
+							Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
+						}
 
-					@Override
-					public void onError(ErrorType errorType) {
-						Log.d("data-dataChannel-java", "received error-result from js: errorType=" + errorType);
-					}
-				});
+						@Override
+						public void onError(ErrorType errorType) {
+							Log.d("data-dataChannel-java", "received error-result from js: errorType=" + errorType);
+						}
+					});
+				}
 			}
 		});
 

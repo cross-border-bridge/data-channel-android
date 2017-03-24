@@ -17,6 +17,7 @@ public class DataChannelTest {
 	private DataChannel receiverChannel;
 	private boolean isCalledHandler1;
 	private boolean isCalledHandler2;
+	private volatile int counter;
 
 	@Before
 	public void setUp() {
@@ -225,6 +226,61 @@ public class DataChannelTest {
 				Assert.assertEquals(ErrorType.Close, errorType);
 			}
 		});
+		after();
+	}
+
+	@Test
+	public void マルチスレッド() {
+		before();
+		final int tryCount = 1000;
+		final int threadCount = 10;
+		counter = 0;
+
+		receiverChannel.addHandler(new DataChannelHandler() {
+			@Override
+			public void onPush(Object packet) {
+				Assert.fail();
+			}
+
+			@Override
+			public void onRequest(Object packet, DataChannelCallback callback) {
+				counter++;
+				callback.send("Okay");
+			}
+		});
+
+		Thread[] threads = new Thread[threadCount];
+		for (int i = 0; i < threadCount; i++) {
+			threads[i] = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					for (int i = 0; i < tryCount; i++) {
+						senderChannel.sendRequest("Is this Okay #" + i, new DataChannelResponseHandler() {
+							@Override
+							public void onResponse(Object packet) {
+								counter++;
+							}
+
+							@Override
+							public void onError(ErrorType errorType) {
+								Assert.fail();
+							}
+						});
+					}
+				}
+			});
+			threads[i].start();
+		}
+
+		try {
+			for (Thread t : threads) {
+				t.join();
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		Assert.assertEquals(tryCount * 2 * threads.length, counter);
 		after();
 	}
 

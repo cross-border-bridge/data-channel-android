@@ -7,27 +7,34 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 class DataChannelWaitingResponseTable {
-	private final Map<RequestTag, DataChannelResponseHandler> table = new ConcurrentHashMap<RequestTag, DataChannelResponseHandler>();
+	private final Map<String, DataChannelResponseHandler> table = new ConcurrentHashMap<String, DataChannelResponseHandler>();
+	private final Object locker = new Object();
 
 	DataChannelResponseHandler get(RequestTag tag) {
-		Set<RequestTag> keys = table.keySet();
-		for (RequestTag key : keys) {
-			if (key.name.equals(tag.name)) {
-				return table.remove(key);
+		synchronized (locker) {
+			Set<String> keys = table.keySet();
+			String tagString = tag.toString();
+			for (String key : keys) {
+				if (key.equals(tagString)) {
+					return table.remove(key);
+				}
 			}
 		}
 		return null;
 	}
 
 	void put(RequestTag tag, DataChannelResponseHandler handler) {
-		get(tag);
-		table.put(tag, handler);
+		synchronized (locker) {
+			table.put(tag.toString(), handler);
+		}
 	}
 
 	Map<RequestTag, DataChannelResponseHandler> popAllHandlers() {
 		Map<RequestTag, DataChannelResponseHandler> returnTable = new HashMap<RequestTag, DataChannelResponseHandler>();
-		for (RequestTag key : table.keySet()) {
-			returnTable.put(key, table.remove(key));
+		synchronized (locker) {
+			for (String key : table.keySet()) {
+				returnTable.put(new RequestTag(key), table.remove(key));
+			}
 		}
 		return returnTable;
 	}
