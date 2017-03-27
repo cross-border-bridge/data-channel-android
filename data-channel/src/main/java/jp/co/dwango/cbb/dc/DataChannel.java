@@ -5,7 +5,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import jp.co.dwango.cbb.db.DataBus;
 import jp.co.dwango.cbb.db.DataBusHandler;
@@ -17,9 +20,9 @@ public class DataChannel {
 	private static final int DATA_TYPE_ERROR = 4;
 	public final DataBus dataBus;
 	private final DataChannelWaitingResponseTable waitingCallbacks = new DataChannelWaitingResponseTable();
+	private final List<DataChannelHandler> handlers = Collections.synchronizedList(new ArrayList<DataChannelHandler>());
 	private DataBusHandler dataBusHandler;
-	private ArrayList<DataChannelHandler> handlers = new ArrayList<DataChannelHandler>();
-	private int latestTagNumber = 1;
+	private AtomicInteger latestTagNumber = new AtomicInteger(0);
 	private boolean destroyed = false;
 
 	/**
@@ -139,7 +142,7 @@ public class DataChannel {
 			return;
 		}
 		JSONArray data = new JSONArray();
-		RequestTag tag = new RequestTag("A", latestTagNumber++);
+		RequestTag tag = new RequestTag("A", latestTagNumber.incrementAndGet());
 		data.put(tag.toString());
 		waitingCallbacks.put(tag, callback);
 		data.put(request);

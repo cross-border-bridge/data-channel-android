@@ -21,8 +21,8 @@ import java.io.InputStreamReader;
 import jp.co.dwango.cbb.db.DataBus;
 import jp.co.dwango.cbb.db.WebViewDataBus;
 import jp.co.dwango.cbb.dc.DataChannel;
-import jp.co.dwango.cbb.dc.DataChannelHandler;
 import jp.co.dwango.cbb.dc.DataChannelCallback;
+import jp.co.dwango.cbb.dc.DataChannelHandler;
 import jp.co.dwango.cbb.dc.DataChannelResponseHandler;
 import jp.co.dwango.cbb.dc.ErrorType;
 
