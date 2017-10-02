@@ -1,5 +1,10 @@
 # Change log
 
+## Version 2.0.5
+- 依存する Gradle のバージョンを更新
+- DataBusをVersion 2.1.1に更新
+- テストプログラムのWebViewDataBusのインジェクション方式を自動から手動に変更
+
 ## Version 2.0.4
 性能改善 (不要な排他制御を排除)
 
