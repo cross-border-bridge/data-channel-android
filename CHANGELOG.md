@@ -1,5 +1,8 @@
 # Change log
 
+## Version 2.0.6
+- data-bus-androidを2.1.2に更新
+
 ## Version 2.0.5
 - 依存する Gradle のバージョンを更新
 - DataBusをVersion 2.1.1に更新
