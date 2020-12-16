@@ -1,23 +1,26 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.novoda.bintray-release'
-def pomVersion = "2.0.6"
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
+def libraryGroupId = 'jp.co.dwango.cbb'
+def libraryArtifactId = 'data-channel'
+def pomVersion = "2.0.7"
 
 buildscript {
     repositories {
         jcenter()
     }
     dependencies {
-        classpath 'com.novoda:bintray-release:0.4.0'
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
     }
 }
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 26
     buildToolsVersion '25.0.0'
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 23
+        targetSdkVersion 26
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -34,18 +37,52 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.2.1'
-    compile 'jp.co.dwango.cbb:data-bus:2.1.2'
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'jp.co.dwango.cbb:data-bus:2.1.3'
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:1.9.5'
     testCompile 'org.json:json:20140107'
 }
 
-publish {
-    userOrg = 'cross-border-bridge'
-    groupId = 'jp.co.dwango.cbb'
-    artifactId = 'data-channel'
-    publishVersion = pomVersion
-    desc = 'DataChannel for Android'
-    website = 'https://github.com/cross-border-bridge/data-channel-android'
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                from components.release
+                groupId = libraryGroupId
+                artifactId = libraryArtifactId
+                version = pomVersion
+            }
+        }
+    }
+}
+
+bintray {
+    if (project.hasProperty('bintrayUser')) {
+        user = property('bintrayUser')
+    }
+    if (project.hasProperty('bintrayKey')) {
+        key = property('bintrayKey')
+    }
+    publications = ['release']
+    publish = true
+    if (project.hasProperty('dryRun')) {
+        dryRun = property('dryRun')
+    } else {
+        dryRun = false
+    }
+    override = true
+    pkg {
+        repo = 'maven'
+        name = libraryArtifactId
+        userOrg = 'cross-border-bridge'
+        desc = 'DataBus for Android'
+        websiteUrl = 'https://github.com/cross-border-bridge/data-channel-android'
+        publicDownloadNumbers = true
+        version {
+            name = pomVersion
+            released = new Date()
+        }
+    }
 }
